@@ -1,0 +1,37 @@
+ID: 222100
+Latitude: -0.914
+Longitude: 36.446
+Name: Longonot
+Country: Kenya
+Region: Africa and Red Sea
+Volcano Type: Stratovolcano
+ROCKType: Trachyte / Trachyandesite
+Elevation: 2776
+
+[Start Study]
+Type: ERS1/ERS2  	
+StartDate: 1997
+EndDate: 2000
+Reference: doi:10.1130
+Description:400km of the Rift was sampled during 3 different time periods (1997-2000, 2003-2006, 2006,2008). Envisat has aquired two to three per year since 2003. 
+[End Study]
+
+[StartStudy]
+Type: ALOS
+StartDate: 2006
+EndDate: 2008
+Reference: doi: 10.1029/2009GC002558
+[EndStudy]
+
+Description: >>
+
+Most recent eruption: 1863
+
+The deformation is episodic. An episode of surface deformation was only oberseverd from 2004-2006. Surface deformation was subsidence of 4.6cm. Best fitting source model for each episode of subsidence is inflation or deflation of a penny-sized crack at a depth 2-5Km. 
+Observed transient uplift and subsidence of a second, nearby source is likely associated with the the complex plumbing system under the observed volcanos. The penny-sized crack is at 4.1 and at a radius of 6.2Km. The deformation could also be explained by a Mogi source (point source).  
+
+Obs Freq: 1 year
+Duration: < 2 years
+Magnitude: 3.3 cm/yr
+Method: InSAR
+
