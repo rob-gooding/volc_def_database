@@ -1,0 +1,34 @@
+ID: 222110  
+Latitude: -1.175
+Longitude: 36.35
+Name: Suswa
+Region: Africa and Red Sea
+Country: Kenya
+Volcano Type: Shield
+ROCKType: Phonolite
+Elevation: 2,356m
+
+[Start Study]
+Type: ERS1/ERS2, Envisat and InSAR	
+StartDate: 1997
+EndDate: 2008
+Reference: doi: 10.1130
+Description: 400km of the Rift was sampled during 3 different time periods (1997-2000, 2003-2006, 2006,2008). Envisat has aquired two to three per year since 2003. 
+[End Study]
+
+[Start Study]
+Type: ALOS	
+StartDate: 2006
+EndDate: 2008
+Reference: doi: 10.1029/2009GC002558
+[End Study]
+
+Description: >>
+
+The deformation is episodic. An episode of surface deformation was only oberseverd from 1997-2000. Surface deformation was subsidence of 4.6cm. Best fitting source model for each episode of subsidence of inflation or deflation of a penny-sized crack at a depth 2-5Km. 
+Observed transient uplift and subsidence of a second, nearby source is likely associated with the the complex plumbing system under the observed volcanos. The penny-sized crack is at 1.9Km and at a radius of 3.7Km. The deformation could also be explained by a Mogi source (point source).
+
+Obs freq: 1 year
+Duration: < 3 years
+Magnitude: -1.5 cm/yr
+Method: InSAR
