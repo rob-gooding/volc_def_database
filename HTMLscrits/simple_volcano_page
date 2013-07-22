@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Home</title>
+<meta name="Generator" content="Serif WebPlus X6 (14.0.0.020)">
+<meta name="viewport" content="width=960">
+<style type="text/css">
+body{margin:0;padding:0;}
+.Body-C
+{
+    font-family:"Verdana", sans-serif; font-size:16.0px; line-height:1.13em;
+}
+.Body-C-C0
+{
+    font-family:"Gill Sans MT", sans-serif; font-size:27.0px; line-height:1.41em;
+}
+</style>
+<link rel="stylesheet" href="wpscripts/wpstyles.css" type="text/css"></head>
+
+<body text="#000000" style="background:#ffffff; height:1000px;">
+<div style="background-color:transparent;margin-left:auto;margin-right:auto;position:relative;width:960px;height:1000px;">
+<div style="position:absolute;left:19px;top:12px;width:923px;height:971px;overflow:hidden;">
+<p class="Wp-Body-P"><span class="Body-C"><br></span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0">NAME OF VOLCANO</span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0"><br></span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0">VOLCANO ID &nbsp;</span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0">MAIN ROCK TYPE </span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0">VOLCANO TYPE</span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0"><br></span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0">REGION</span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0">COUNTRY</span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0">ELEVATION</span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0">LATITUDE </span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0">LONGITUDE </span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0"><br></span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0">DEFORMATION STUDIES</span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0">DOI &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DESCRIPTION </span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0">TYPE</span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0">START DATE </span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0">END DATE</span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0"><br></span></p>
+<p class="Wp-Body-P"><span class="Body-C-C0"><br></span></p>
+</div>
+</div>
+</body>
+</html>
