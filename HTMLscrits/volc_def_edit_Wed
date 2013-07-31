@@ -1,0 +1,536 @@
+
+#!/usr/bin/env python
+""" volc_def: a database of volcano deformation
+    
+    This module contains the code that can be used to
+    process files containing information about volcano
+    deformation. These can be used, for example, to 
+    build a website of observations.
+    
+    When used as a module a single class is exposed
+    which allows objects describing volcano 
+    defomation to be created and manipulated
+    
+    When used as a script, the class is populated
+    by reading an file describing a single volcano
+    and an operation (validation, converting to
+    XML etc.) on the resulting data is undertaken.
+    """
+
+import re
+import datetime
+
+class Volcano:
+    """ A container and processor for volcano defomation """
+    
+    def __init__(self, filename=None, debug=False):
+        # This is called when a new instance of
+        # Volcano is created. First set all the 
+        # possible data fields to 'null' values
+        # so we can tell if data is missing.
+        self.id = None
+        self.name = None
+        self.latitude = float('NaN')
+        self.longitude = float('NaN')
+        self.rocktype = None
+        self.typev = None
+        self.region = None
+        self.elevation = None
+        self.studies = []
+        self.events = []
+        self.references = []
+        self.description = ""
+        # NOTE: put new data holders here
+        #       choosing a sensible null value
+        
+        # If we have a filename we can use it 
+        # to populate the data now.
+        if filename is not None:
+            self._parse_file(filename, debug=debug)
+    
+    def _parse_file(self, filename, debug=False):
+        # This is a simple state machine based
+        # parser to read our data file format.
+        # There are definatly better ways to do this
+        # but this is simple!
+        
+        section_name = None # Are we in a section, which one?
+        keyword = None # What is this line's keyword?
+        multiline = False
+        multiline_keyword = None
+        
+        f = open(filename, 'r')
+        for line in f:
+            
+            new_section = re.match(r"\s*\[\s*Start\s+(\w+)\s*\]",line)
+            if new_section:
+                if section_name is None:
+                    # New section in root of file... OK
+                    section_name = new_section.group(1).strip().upper()
+                    # Create new empty object for this section
+                    if (section_name=="STUDY"):
+                        self.studies.append(Study())
+                    elif(section_name=="EVENT"):
+                        self.events.append(Event()) 
+                    continue 
+                else:
+                    raise Exception("Sections cannot be nested")
+            
+            end_section = re.match(r"\s*\[\s*End\s+(\w+)\s*\]",line)
+            if end_section:
+                if (end_section.group(1).strip().upper()==section_name):
+                    # Ended this section OK
+                    section_name = None
+                    continue
+                else:
+                    raise Exception("End section did not match start")
+            
+            key_val = re.match(r"\s*(\w+)\s*:(.+?)$", line)
+            if key_val:
+                keyword = key_val.group(1).strip().upper()
+                value = key_val.group(2).strip()
+                if (value==">>"):
+                    if multiline:
+                        raise Exception("Cannot nest multiline blocks")
+                    else:
+                        multiline = True
+                        multiline_keyword = keyword
+                        continue
+                elif (value=="<<"):
+                    if not multiline:
+                        raise Exception("Not in a multiline block")
+                    elif (multiline_keyword != keyword):
+                        raise Exception("End multiline mismatch")
+                    else:
+                        multiline = False
+                        multiline_keyword = None
+                        continue
+                else:
+                    if section_name is None:
+                        # process this keyword value pair
+                        # in file root.
+                        if keyword=="ID":
+                            self.id = value
+                            continue
+                        elif keyword=="NAME":
+                            self.name = value
+                            continue
+                        elif keyword=="LATITUDE":
+                            self.latitude = float(value)
+                            continue
+                        elif keyword=="LONGITUDE":
+                            self.longitude = float(value)
+                            continue
+                        elif keyword=="ROCKTYPE":
+                            self.rocktype = value
+                            continue
+                        elif keyword=="TYPEV":
+                            self.typev = value
+                            continue
+                        elif keyword=="REGION":
+                            self.region = value
+                            continue
+                        elif keyword=="COUNTRY":
+                            self.country = value
+                            continue
+                        elif keyword=="ELEVATION":
+                            self.elevation = value
+                            continue  
+                        elif keyword=="DESCRIPTION":
+                            self.description = self.description+value
+                            continue
+                        elif keyword=="REFERENCE":
+                            self.references.append(value)
+                            continue
+                        elif keyword=="DOI":
+                            self.doi = value
+                            continue    
+                        
+                        else:
+                            # Don't recognise this - skip
+                            continue
+                    elif section_name == "STUDY":
+                        if keyword=="TYPE":
+                            if self.studies[-1].type is None:
+                                self.studies[-1].type = value
+                            else:
+                                raise Exception("Double study type")
+                        elif keyword=="DESCRIPTION":
+                            self.studies[-1].description = self.description+value
+                            continue
+                        elif keyword=="STARTDATE":
+                            (d, m, y) = value.split('/',3)
+                            self.studies[-1].startdate = datetime.date(int(y), int(m), int(d))
+                            continue
+                        elif keyword=="ENDDATE":
+                            (d, m, y) = value.split('/',3)
+                            self.studies[-1].enddate = datetime.date(int(y), int(m), int(d))
+                            continue
+                        elif keyword=="REFERENCE":
+                            self.studies[-1].references.append(value)
+                            continue
+                    
+                    elif section_name == "EVENT":
+                        if keyword=="TYPE":
+                            if self.event[-1].type is None:
+                                self.event[-1].type = vaue
+                            else:
+                                raise Exception("Double study type")
+                        elif keyword=="DESCRIPTION":
+                            self.event[-1].description = self.description+value
+                            continue
+                        elif keyword=="STARTDATE":
+                            (d, m, y) = value.split('/',3)
+                            self.event[-1].startdate = datetime.date(int(y), int(m), int(d))
+                            continue
+                        elif keyword=="ENDDATE":
+                            (d, m, y) = value.split('/',3)
+                            self.event[-1].enddate = datetime.date(int(y), int(m), int(d))
+                            continue
+                        elif keyword=="REFERENCE":
+                            self.event[-1].references.append(value)
+                            continue
+                    
+                    else:
+                        raise Exception("In unrecognised section")
+            else:
+                # Error unless we are in a multilne block
+                if multiline:
+                    if section_name is None:
+                        if multiline_keyword == "DESCRIPTION":
+                            self.description = self.description+line.strip()+" "
+                    elif section_name == "STUDY":
+                        if multiline_keyword == "DESCRIPTION":
+                            self.studies[-1].description = self.description+line.strip()+" "
+                    elif section_name == "EVENT":
+                        if multiline_keyword == "DESCRIPTION":
+                            self.event[-1].description = self.description+line.strip()+" "
+    
+    # Should we error out here? 
+    
+    def dump(self):
+        print "ID: " + self.id
+        print "Name: " + self.name
+        print "Latitude: " + str(self.latitude)
+        print "Longitude: " + str(self.longitude)
+        print "Rocktype: " + self.rocktype
+        print "Volcano Type:" + self.typev
+        print "Region:" + self.region
+        print "Country:" + self.country
+        print "Elevation:" + self.elevation
+        print "DOI:" + self.doi
+        print
+        if self.description != "":
+            print "Description: " + self.description
+        
+        for event in self.events:
+            print "[Start event]"
+            print "Type: " + event.type
+            if event.description != "":
+                print "Description: " + event.description
+            if event.startdate is not None:
+                print "Startdate: " + event.startdate.strftime('%d/%m/%Y')
+            if study.enddate is not None:
+                print "Enddate: " + event.enddate.strftime('%d/%m/%Y')
+            for reference in event.references:
+                print "Reference: " + reference
+            print "[End event]"
+        
+        for study in self.studies:
+            print "[Start study]"
+            print "Type: " + study.type
+            if study.description != "":
+                print "Description: " + study.description
+            if study.startdate is not None:
+                print "Startdate: " + study.startdate.strftime('%d/%m/%Y')
+            if study.enddate is not None:
+                print "Enddate: " + study.enddate.strftime('%d/%m/%Y')
+            for reference in study.references:
+                print "Reference: " + reference
+            print "[End study]"
+        
+        for reference in self.references:
+            print "Reference: " + reference
+    
+    def html(self):
+        head = """
+            <html lang="en">
+            <head>
+        
+           
+            
+            
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            <title>Volcano Page</title>
+            <meta name="Generator" content="Serif WebPlus X6">
+            <meta name="viewport" content="width=1200">
+            <style type="text/css">
+            </style>
+           
+            <link rel="stylesheet" href="wpscripts/wpstyles.css" type="text/css"></head>
+            
+            <body text="#000000" style="background:#ffffff; height:1500px;">
+            <div style="background-color:transparent;margin-left:auto;margin-right:auto;position:relative;width:1200px;height:1500px;">
+            <img src="http://www1.gly.bris.ac.uk/~juliet/About_my_research_files/main_image.jpg" border="0" width="1300" height="1800" alt="" style="position:absolute;left:0px;top:0px;">
+            <img src="grey_box.jpg" border="0" width="1150" height="1630" alt="" style="position:absolute;left:25px;top:150px;">
+            
+            <div style="position:absolute;left:466px;top:17px;width:445px;height:33px; background-color:#636363;opacity:0.7">
+            <a href="home.html" id="nav_16_B1" class="Button1" style="display:block;position:absolute;left:5px;top:5px;width:141px;height:22px;"><span><center><font face="Arial"><fontsize="30px"><font color = "#ffffff">Home</center></font></font></font></span></a>
+            <a href="vindex.html" id="nav_16_B2" class="Button1" style="display:block;position:absolute;left:146px;top:5px;width:141px;height:22px;"><span><center><font face="Arial"><fontsize="30px"><font color = "#ffffff">Volcano&nbsp;Index</center></font></font></font></span></a>
+            <a href="taskforce.html" id="nav_16_B3" class="Button1" style="display:block;position:absolute;left:287px;top:5px;width:141px;height:22px;"><span><center><font face="Arial"><fontsize="30px"><font color = "#ffffff">Task&nbsp;Force</center></font></font></font></span></a>
+            
+            </div>
+            <div style="position:absolute;left:26px;top:8px;width:286px;height:130px;             <p class="Body-P"><span class="Body-C"><img src="gvm_logo_1.png"></span></p>
+            </div>
+            <div style="position:absolute;left:75px;top:140px;width:1049px;height:1274px; background-color:#fefdf9;background: transparent url('wpimages/wp8eda78db_06.png') no-repeat top left;">
+            <img src="suswa.jpg" border="0" width="391" height="420" alt="" style="position:absolute;left:32px;top:91px;">
+            <div style="position:absolute;left:26px;top:560px;width:1003px;height:143px; background-color:#696969; border: 3px solid #000000;overflow:hidden;">
+            <p class="Wp-Body-P"><span class="Body-C-C1"><font color="#ffffff"><font face = "Gill Sans MT"><font size = "4">{description}</font></font></font> &nbsp;</span></p>
+            </div>
+            <div style="position:absolute;left:36px;top:14px;width:906px;height:67px;overflow:hidden;">
+            <p class="Wp-Body-P"><span class="Body-C-C2"><font size="20.0 px"><font face="Gill Sans MT">{name}</font></font></span></p>
+            </div>
+            <table id="table_6" cellspacing="0" cellpadding="0" style=" border-collapse: collapse; position:absolute; left:432px; top:302px; width:308px; height:224px;">
+            <col style="width:161px;">
+            <col style="width:145px;">
+            <tr style="height:45px;">
+            <td style="vertical-align:top; padding:1px 4px 1px 4px;">
+            <p class="Wp-Table-Body-P"><span class="Table-Body-C"><font face="Gill Sans MT"><font size="5">Region:</font></font></span></p>
+            </td>
+            <td style="vertical-align:top; padding:1px 4px 1px 4px;">
+            <p class="Wp-Table-Body-P"><span class="Table-Body-C-C0"><font face="Arial"><font size="5">{region}</font></font></span></p>
+            </td>
+            </tr>
+            <tr style="height:45px;">
+            <td style="vertical-align:top; padding:1px 4px 1px 4px;">
+            <p class="Wp-Table-Body-P"><span class="Table-Body-C"><font face="Gill Sans MT"><font size="5">Country:</font></font></span></p>
+            </td>
+            <td style="vertical-align:top; padding:1px 4px 1px 4px;">
+            <p class="Wp-Table-Body-P"><span class="Table-Body-C-C0"><font face="Arial"><font size="5">{country}</font></font></span></p>
+            </td>
+            </tr>
+            <tr style="height:45px;">
+            <td style="vertical-align:top; padding:1px 4px 1px 4px;">
+            <p class="Wp-Table-Body-P"><span class="Table-Body-C"><font face="Gill Sans MT"><font size="5">Elevation:</font></font></span></p>
+            </td>
+            <td style="vertical-align:top; padding:1px 4px 1px 4px;">
+            <p class="Wp-Table-Body-P"><span class="Table-Body-C-C0"><font face="Arial"><font size="5">{elevation}</font></font></span></p>
+            </td>
+            </tr>
+            <tr style="height:45px;">
+            <td style="vertical-align:top; padding:1px 4px 1px 4px;">
+            <p class="Wp-Table-Body-P"><span class="Table-Body-C"><font face="Gill Sans MT"><font size="5">Latitude:</font></font></span></p>
+            </td>
+            <td style="vertical-align:top; padding:1px 4px 1px 4px;">
+            <p class="Wp-Table-Body-P"><span class="Table-Body-C-C0"><font face="Arial"><font size="5">{lat}</font></font></span></p>
+            </td>
+            </tr>
+            <tr style="height:45px;">
+            <td style="vertical-align:top; padding:1px 4px 1px 4px;">
+            <p class="Wp-Table-Body-P"><span class="Table-Body-C"><font face="Gill Sans MT"><font size="5">Longitude:</font></font></span></p>
+            </td>
+            <td style="vertical-align:top; padding:1px 4px 1px 4px;">
+            <p class="Wp-Table-Body-P"><span class="Table-Body-C-C0"><font face="Arial"><font size="5">{lon}</font></font></span></p>
+            </td>
+            </tr>
+            </table>
+            <table id="table_7" cellspacing="0" cellpadding="0" style=" border-collapse: collapse; position:absolute; left:432px; top:93px; width:314px; height:196px;">
+            <col style="width:313px;">
+            <tr style="height:49px;">
+            <td style="vertical-align:top; padding:1px 4px 1px 4px;">
+            <p class="Wp-Table-Body-P"><span class="Table-Body-C-C1"><font face="Gill Sans MT"><font size="5">Name:</font></font></span></p>
+            </td>
+            </tr>
+            <tr style="height:49px;">
+            <td style="vertical-align:top; padding:1px 4px 1px 4px;">
+            <p class="Wp-Table-Body-P"><span class="Table-Body-C-C1"><font face="Gill Sans MT"><font size="5">Volcano ID:</font></font></span></p>
+            </td>
+            </tr>
+            <tr style="height:49px;">
+            <td style="vertical-align:top; padding:1px 4px 1px 4px;">
+            <p class="Wp-Table-Body-P"><span class="Table-Body-C-C1"><font face="Gill Sans MT"><font size="5">Main Rock Type:</font></font></span></p>
+            </td>
+            </tr>
+            <tr style="height:49px;">
+            <td style="vertical-align:top; padding:1px 4px 1px 4px;">
+            <p class="Wp-Table-Body-P"><span class="Table-Body-C-C1"><font face="Gill Sans MT"><font size="5">Volcano Type:</font></font></span></p>
+            </td>
+            </tr>
+            </table>
+            <div style="position:absolute;left:746px;top:93px;width:265px;height:37px; background-color:#636363;overflow:hidden;">
+            <p class="Wp-Body-P"><span class="Body-C-C1"><font face="Arial"><font color="#ffffff"><fontsize="30px"><center>{name}</center></span></centre></p>
+            </div>
+            <div style="position:absolute;left:746px;top:143px;width:265px;height:35px; background-color:#636363;overflow:hidden;">
+            <p class="Wp-Body-P"><span class="Body-C-C1"><center>{id}</center></span></p>
+            <p class="Wp-Body-P"><span class="Body-C-C3"><br></span></p>
+            </div>
+            <div style="position:absolute;left:746px;top:239px;width:265px;height:37px; background-color:#636363;overflow:hidden;">
+            <p class="Wp-Body-P"><span class="Body-C-C1"><center>{vtype}</center></span></p>
+            </div>
+            <div style="position:absolute;left:746px;top:191px;width:265px;height:38px; background-color:#636363;overflow:hidden;">
+            <p class="Wp-Body-P"><span class="Body-C-C1"><center>{rock}</center></font></font></font></span></p>
+            <p class="Wp-Body-P"><span class="Body-C-C3"><br></span></p>
+            </div>
+            <div style="position:absolute;left:100px;top:709px;width:681px;height:47px;overflow:hidden;">
+            <p class="Wp-Body-P"><span class="Body-C-C4"><font face = "Gill Sans MT"><font size ="5"> Deformation Studies:</font></font></span></p>
+            </div>
+            </div>
+            
+                
+            <iframe width="425" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"  style="position:absolute;left:821px;top:442px;width:280px;height:241px;border:1px solid #979797;"   src="https://maps.google.co.uk/maps?f=q&amp;source=s_q&amp;hl=en&amp;geocode=&amp;q=Mount+Suswa,+Kajiado,+Kenya&amp;aq=3&amp;oq=suswa&amp;sll=51.468489,-2.590709&amp;sspn=0.309685,0.76767&amp;t=h&amp;ie=UTF8&amp;hq=&amp;hnear=Mt+Suswa&amp;z=11&amp;ll=-1.176141,36.348867&amp;output=embed"></iframe><br /><small><a href="https://maps.google.co.uk/maps?f=q&amp;source=embed&amp;hl=en&amp;geocode=&amp;q=Mount+Suswa,+Kajiado,+Kenya&amp;aq=3&amp;oq=suswa&amp;sll=51.468489,-2.590709&amp;sspn=0.309685,0.76767&amp;t=h&amp;ie=UTF8&amp;hq=&amp;hnear=Mt+Suswa&amp;z=11&amp;ll=-1.176141,36.348867" style="color:#0000FF;text-align:left">View Larger Map</a></small>
+            
+            
+            
+            <div style="position:absolute;left:100px;top:1250px;width:100px;height:47px;overflow:hidden;">
+            <p class="Wp-Body-P"><span class="Body-C-C4"><font face = "Gill Sans MT"><font size ="5"><b>Images:</b></font></font></span></p>
+            </div>
+            
+            <div style="position:absolute;left:250px;top:1300px;width:200px;height:47px;overflow:hidden;">
+            <p class="Wp-Body-P"><span class="Body-C-C4"><font face = "Gill Sans MT"><font size ="5">Interferogram</font></font></span></p>
+            </div>
+            
+            <div style="position:absolute;left:800px;top:1300px;width:200px;height:47px;overflow:hidden;">
+            <p class="Wp-Body-P"><span class="Body-C-C4"><font face = "Gill Sans MT"><font size ="5">Interpretation</font></font></span></p>
+            </div>
+           
+            <img src="interferogram_suswa.jpg" border="0" width="500" height="400" style="position:absolute;left:80px;top:1360px;">       
+           
+            <img src="interp_suswa.pdf" border="0" width="550" height="400" style="position:absolute;left:600px;top:1360px;">   
+            
+            </body>
+            </html>
+            
+            
+           
+            """.format(name=self.name, id=self.id, vtype=self.typev, region=self.region, country=self.country, elevation=self.elevation, doi=self.doi, lat=self.latitude, lon=self.longitude, rock=self.rocktype, description=self.description)
+        
+        volc_refs = " "
+        for reference in self.references:
+            volc_refs = volc_refs + " ".format(ref=reference)
+        volc_refs = volc_refs+"</ul>"
+        
+        studies = "<h2>Studies</h2>"
+        for study in self.studies:
+            # Do we need to give studies names?
+            studies = studies+"""
+            
+                <div style="position:relative;left:210px;bottom:600px;width:1001px;height:83px; background-color:#a9a9a9;overflow:hidden;">
+                <p class="Wp-Body-P"><span class="Body-C-C5"><font face="Arial"><font color="#000000"><fontsize="30px">{desc}</span></font></font></font></p>
+                </div>
+                </div>
+                
+                <table id="table_10" cellspacing="0" cellpadding="0" style=" border-collapse: collapse; position:relative; left:210px; bottom:600px; width:1001px; height:132px;">
+                <col style="width:149px;">
+                <col style="width:135px;">
+                <col style="width:159px;">
+                <col style="width:220px;">
+                <col style="width:181px;">
+                <col style="width:154px;">
+                <tr style="height:53px;">
+                <td style="vertical-align:top; padding:1px 4px 1px 4px; border:2px solid #000000;">
+                <p class="Table-Body-P"><span class="Table-Body-C-C2"><center><b><font face="Arial"><fontsize="30px">Study No.</center></b></font></font></span></p>
+                </td>
+                <td style="vertical-align:top; padding:1px 4px 1px 4px; border:2px solid #000000;">
+                <p class="Table-Body-P"><span class="Table-Body-C-C3"><center><b><font face="Arial"><fontsize="30px">DOI</center></b></font></font></span></p>
+                </td>
+                <td style="vertical-align:top; padding:1px 4px 1px 4px; border:2px solid #000000;">
+                <p class="Table-Body-P"><span class="Table-Body-C-C3"><center><b><font face="Arial"><fontsize="30px">Type</center></b></font></font></span></p>
+                </td>
+                <td style="vertical-align:top; padding:1px 4px 1px 4px; border:2px solid #000000;">
+                <p class="Table-Body-P"><span class="Table-Body-C-C3"><center><b><font face="Arial"><fontsize="30px">Reference</center></b></font></font></span></p>
+                </td>
+                <td style="vertical-align:top; padding:1px 4px 1px 4px; border:2px solid #000000;">
+                <p class="Table-Body-P"><span class="Table-Body-C-C3"><center><b><font face="Arial"><fontsize="30px">Start Date</center></b></font></font></span></p>
+                </td>
+                <td style="vertical-align:top; padding:1px 4px 1px 4px; border:2px solid #000000;">
+                <p class="Table-Body-P"><span class="Table-Body-C-C3"><center><b><font face="Arial"><fontsize="30px">End Date</center></b></font></font></span></p>
+                </td>
+                </tr>
+                <tr style="height:78px;">
+                <td style="vertical-align:top; padding:1px 4px 1px 4px; border:2px solid #000000;">
+                <p class="Table-Body-P"><span class="Table-Body-C-C4"><center><font face="Arial"><fontsize="30px">#</center></font></font></span></p>
+                </td>
+                <td style="vertical-align:top; padding:1px 4px 1px 4px; border:2px solid #000000;">
+                <p class="Table-Body-P"><span class="Table-Body-C-C4"><center><font face="Arial"><fontsize="30px">DOI</center></font></font></span></p>
+                </td>
+                <td style="vertical-align:top; padding:1px 4px 1px 4px; border:2px solid #000000;">
+                <p class="Table-Body-P"><span class="Table-Body-C-C4"><center><font face="Arial"><fontsize="30px">{type}</center></font></font></span></p>
+                </td>
+                <td style="vertical-align:top; padding:1px 4px 1px 4px; border:2px solid #000000;">
+                <p class="Table-Body-P"><span class="Table-Body-C-C4"><center><font face="Arial"><fontsize="30px">{ref}</center></font></font></span></p>
+                </td>
+                <td style="vertical-align:top; padding:1px 4px 1px 4px; border:2px solid #000000;">
+                <p class="Table-Body-P"><span class="Table-Body-C-C4"><center><font face="Arial"><fontsize="30px">{start}</center></font></font></span></p>
+                </td>
+                <td style="vertical-align:top; padding:1px 4px 1px 4px; border:2px solid #000000;">
+                <p class="Table-Body-P"><span class="Table-Body-C-C4"><center><font face="Arial"><fontsize="30px">{end}</center></font></font></span></p>
+                </td>
+                </tr>
+                </table>
+                </div>
+
+                                
+               """.format(type=study.type,
+                                        start=str(study.startdate), 
+                                        end=str(study.enddate), 
+                                        desc=study.description, ref=reference)
+            studies = studies+"  "
+            for reference in study.references:
+                studies = studies + " ".format(ref=reference)
+            studies = studies+" "
+        
+        events = "<h2> </h2>"
+        for event in self.events:
+            # Do we need to give events names?
+            events = events+"""
+
+                
+             
+                """.format(type=event.type,
+                                        start=str(event.startdate), 
+                                        end=str(event.enddate), 
+                                        desc=event.description)
+            eventss = eventss+" "
+            for reference in event.references:
+                events = events + " ".format(ref=reference)
+            events = events+"</ul>"
+        
+        tail = "</body></html>"
+        return head+events+studies+volc_refs+tail
+
+class Event:
+    "Something that happened to a volcano"
+    
+    def __init__(self):
+        self.type = None
+        self.description = ""
+        self.reference = None
+        self.startdate = None
+        self.enddate = None
+        self.references = []
+
+class Study:
+    "An observation of volcanic deformation"
+    
+    def __init__(self):
+        self.type = None
+        self.description = ""
+        self.reference = None
+        self.startdate = None
+        self.enddate = None
+        self.references = []
+
+if __name__=="__main__":
+    import sys
+    mode = sys.argv[1]
+    for file in sys.argv[2:]:
+        volcano = Volcano(filename=file)
+        if mode == "dump":
+            volcano.dump()
+        if mode == "html":
+            print volcano.html()
+
+
+
+
+
