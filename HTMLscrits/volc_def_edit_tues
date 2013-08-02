@@ -35,6 +35,9 @@ class Volcano:
         self.typev = None
         self.region = None
         self.elevation = None
+        self.volcimage = None
+        self.rawimage = None
+        self.interpimage = None
         self.studies = []
         self.events = []
         self.references = []
@@ -135,6 +138,15 @@ class Volcano:
                         elif keyword=="ELEVATION":
                             self.elevation = value
                             continue  
+                        elif keyword=="VOLCIMAGE":
+                            self.volcimage = value
+                            continue  
+                        elif keyword=="RAWIMAGE":
+                            self.rawimage = value
+                            continue  
+                        elif keyword=="INTERPIMAGE":
+                            self.interpimage = value
+                            continue  
                         elif keyword=="DESCRIPTION":
                             self.description = self.description+value
                             continue
@@ -218,7 +230,9 @@ class Volcano:
         print "Country:" + self.country
         print "Elevation:" + self.elevation
         print "DOI:" + self.doi
-        print
+        print "volcimage" + self.volcimage
+        print "rawimage" + self.rawimage
+        print "interpimage" + self.interpimage
         if self.description != "":
             print "Description: " + self.description
         
@@ -255,6 +269,9 @@ class Volcano:
         head = """
             <html lang="en">
             <head>
+        
+           
+            
             
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
             <title>Volcano Page</title>
@@ -267,11 +284,12 @@ class Volcano:
             
             <body text="#000000" style="background:#ffffff; height:1500px;">
             <div style="background-color:transparent;margin-left:auto;margin-right:auto;position:relative;width:1200px;height:1500px;">
-            <img src="http://www1.gly.bris.ac.uk/~juliet/About_my_research_files/main_image.jpg" border="0" width="1300" height="1500" alt="" style="position:absolute;left:0px;top:0px;">
-            <img src="grey_box.jpg" border="0" width="1150" height="1300" alt="" style="position:absolute;left:25px;top:150px;">
+            <img src="http://www1.gly.bris.ac.uk/~juliet/About_my_research_files/main_image.jpg" border="0" width="1300" height="2000" alt="" style="position:absolute;left:0px;top:0px;">
+            <img src="grey_box.jpg" border="0" width="1150" height="1800" alt="" style="position:absolute;left:25px;top:150px;">
             
             <div style="position:absolute;left:466px;top:17px;width:445px;height:33px; background-color:#636363;opacity:0.7">
             <a href="home.html" id="nav_16_B1" class="Button1" style="display:block;position:absolute;left:5px;top:5px;width:141px;height:22px;"><span><center><font face="Arial"><fontsize="30px"><font color = "#ffffff">Home</center></font></font></font></span></a>
+            
             <a href="vindex.html" id="nav_16_B2" class="Button1" style="display:block;position:absolute;left:146px;top:5px;width:141px;height:22px;"><span><center><font face="Arial"><fontsize="30px"><font color = "#ffffff">Volcano&nbsp;Index</center></font></font></font></span></a>
             <a href="taskforce.html" id="nav_16_B3" class="Button1" style="display:block;position:absolute;left:287px;top:5px;width:141px;height:22px;"><span><center><font face="Arial"><fontsize="30px"><font color = "#ffffff">Task&nbsp;Force</center></font></font></font></span></a>
             
@@ -279,15 +297,12 @@ class Volcano:
             <div style="position:absolute;left:26px;top:8px;width:286px;height:130px;             <p class="Body-P"><span class="Body-C"><img src="gvm_logo_1.png"></span></p>
             </div>
             <div style="position:absolute;left:75px;top:140px;width:1049px;height:1274px; background-color:#fefdf9;background: transparent url('wpimages/wp8eda78db_06.png') no-repeat top left;">
-            <img src="http://geology.com/volcanoes/chaiten/chaiten-eruption-column.jpg" border="0" width="391" height="420" alt="" style="position:absolute;left:32px;top:91px;">
+            <img src="{volcimage}" border="0" width="391" height="420" alt="" style="position:absolute;left:32px;top:91px;">
             <div style="position:absolute;left:26px;top:560px;width:1003px;height:143px; background-color:#696969; border: 3px solid #000000;overflow:hidden;">
             <p class="Wp-Body-P"><span class="Body-C-C1"><font color="#ffffff"><font face = "Gill Sans MT"><font size = "4">{description}</font></font></font> &nbsp;</span></p>
             </div>
             <div style="position:absolute;left:36px;top:14px;width:906px;height:67px;overflow:hidden;">
             <p class="Wp-Body-P"><span class="Body-C-C2"><font size="20.0 px"><font face="Gill Sans MT">{name}</font></font></span></p>
-            </div>
-            <div id="map_3" style="position:absolute;left:746px;top:302px;width:280px;height:241px;border:1px solid #979797;background-color:#e5e3df;">
-            <div style="padding:1em; color:gray;">Loading...</div>
             </div>
             <table id="table_6" cellspacing="0" cellpadding="0" style=" border-collapse: collapse; position:absolute; left:432px; top:302px; width:308px; height:224px;">
             <col style="width:161px;">
@@ -374,17 +389,92 @@ class Volcano:
             <p class="Wp-Body-P"><span class="Body-C-C4"><font face = "Gill Sans MT"><font size ="5"> Deformation Studies:</font></font></span></p>
             </div>
             </div>
-                      <script type="text/javascript" src="http://maps.google.com/maps/api/js?amp;vs=3.3&sensor=false"></script>
-            <script type="text/javascript" src="wpscripts/jsWPGoogleMaps.js"></script>
-            <script type="text/javascript">
-            wpGMapLoad( 'map_3', 54.9523856906335980, -3.8232421875000000, 5, 0, 1, 1, 1, 1, 0, null, 'Failed to generate Google map.', '<br>Street view is not available at this location.' );
-            </script>
+            
+            <iframe width="425" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"  
+            
+            style="position:absolute;left:821px;top:442px;width:280px;height:241px;border:1px solid #979797;"   
+            
+            src="https://maps.google.co.uk/maps?f=q&amp;source=s_q&amp;hl=en&amp;geocode=&amp;q=Mount+Suswa,+Kajiado,+Kenya&amp;aq=3&amp;oq=suswa&amp;sll=51.468489,-2.590709&amp;sspn=0.309685,0.76767&amp;t=h&amp;ie=UTF8&amp;hq=&amp;hnear=Mt+Suswa&amp;z=11&amp;ll=-1.176141,36.348867&amp;output=embed"></iframe><br /><small><a href="https://maps.google.co.uk/maps?f=q&amp;source=embed&amp;hl=en&amp;geocode=&amp;q=Mount+Suswa,+Kajiado,+Kenya&amp;aq=3&amp;oq=suswa&amp;sll=51.468489,-2.590709&amp;sspn=0.309685,0.76767&amp;t=h&amp;ie=UTF8&amp;hq=&amp;hnear=Mt+Suswa&amp;z=11&amp;ll=-1.176141,36.348867" style="color:#0000FF;text-align:left">View Larger Map</a></small>
+            
+            
+            
+            <div style="position:absolute;left:100px;top:1250px;width:100px;height:47px;overflow:hidden;">
+            <p class="Wp-Body-P"><span class="Body-C-C4"><font face = "Gill Sans MT"><font size ="5"><b>Images:</b></font></font></span></p>
+            </div>
+            
+            <div style="position:absolute;left:250px;top:1300px;width:200px;height:47px;overflow:hidden;">
+            <p class="Wp-Body-P"><span class="Body-C-C4"><font face = "Gill Sans MT"><font size ="5">Interferogram</font></font></span></p>
+            </div>
+            
+            <div style="position:absolute;left:800px;top:1300px;width:200px;height:47px;overflow:hidden;">
+            <p class="Wp-Body-P"><span class="Body-C-C4"><font face = "Gill Sans MT"><font size ="5">Interpretation</font></font></span></p>
+            </div>
+           
+            <img src="{rawimage}"  style="position:absolute;left:80px;top:1360px;">       
+           
+            <img src="{interpimage}" style="position:absolute;left:600px;top:1360px;">   
+            
+            <style>
+            div.img
+            {{
+            margin:2px;
+            border:1px solid #0000ff;
+            height:auto;
+            width:auto;
+            float:left;
+            text-align:center;
+            }}
+            div.img img
+            {{
+            display:inline;
+            margin:3px;
+            border:1px solid #ffffff;
+            }}
+            div.img a:hover img
+            {{
+            border:1px solid #0000ff;
+            }}
+            div.desc
+            {{
+            text-align:center;
+            font-weight:normal;
+            width:120px;
+            margin:2px;
+            }}
+            </style>
+            </head>
+            <body>
+            
+            <div class="img">
+            <a target="_blank" href="klematis_big.htm">
+            <img src="klematis_small.jpg" alt="Klematis" width="110" height="90">
+            </a>
+            <div class="desc">Add a description of the image here</div>
+            </div>
+            <div class="img">
+            <a target="_blank" href="klematis2_big.htm">
+            <img src="klematis2_small.jpg" alt="Klematis" width="110" height="90">
+            </a>
+            <div class="desc">Add a description of the image here</div>
+            </div>
+            <div class="img">
+            <a target="_blank" href="klematis3_big.htm">
+            <img src="klematis3_small.jpg" alt="Klematis" width="110" height="90">
+            </a>
+            <div class="desc">Add a description of the image here</div>
+            </div>
+            <div class="img">
+            <a target="_blank" href="klematis4_big.htm">
+            <img src="klematis4_small.jpg" alt="Klematis" width="110" height="90">
+            </a>
+            <div class="desc">Add a description of the image here</div>
+            </div>
+            
+            
             </body>
             </html>
-            
-            
            
-            """.format(name=self.name, id=self.id, vtype=self.typev, region=self.region, country=self.country, elevation=self.elevation, doi=self.doi, lat=self.latitude, lon=self.longitude, rock=self.rocktype, description=self.description)
+            """.format(name=self.name, id=self.id, vtype=self.typev, region=self.region, country=self.country, elevation=self.elevation, volcimage=self.volcimage, rawimage=self.rawimage, interpimage=self.interpimage, doi=self.doi, lat=self.latitude, lon=self.longitude, rock=self.rocktype, description=self.description)
         
         volc_refs = " "
         for reference in self.references:
